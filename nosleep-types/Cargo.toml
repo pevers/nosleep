@@ -1,0 +1,16 @@
+[package]
+name = "nosleep-types"
+description = "Block power save mode cross platform"
+authors = ["Peter Evers"]
+version = "0.2.0-rc.1"
+edition = "2021"
+rust-version = "1.57"
+homepage = "https://github.com/pevers/nosleep"
+repository = "https://github.com/pevers/nosleep"
+license = "MIT"
+keywords = ["nosleep", "powersave", "caffeine", "macOS", "linux", "windows"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+snafu = "0.7.0"
