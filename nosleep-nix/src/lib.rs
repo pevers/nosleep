@@ -7,7 +7,7 @@
 
 use dbus::blocking::{BlockingSender, Connection};
 use nosleep_types::NoSleepType;
-use snafu::prelude::*;
+use snafu::{prelude::*, Backtrace};
 
 #[derive(Debug, Snafu)]
 pub enum Error {
