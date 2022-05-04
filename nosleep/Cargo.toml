@@ -8,7 +8,7 @@ rust-version = "1.57"
 homepage = "https://github.com/pevers/nosleep"
 repository = "https://github.com/pevers/nosleep"
 license = "MIT"
-keywords = ["nosleep", "powersave", "caffeine", "macOS", "linux", "windows"]
+keywords = ["nosleep", "powersave", "caffeine"]
 readme = "../README.md"
 
 [dependencies]

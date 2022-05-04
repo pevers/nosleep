@@ -8,7 +8,7 @@ rust-version = "1.57"
 homepage = "https://github.com/pevers/nosleep-mac-sys"
 repository = "https://github.com/pevers/nosleep-mac-sys"
 license = "MIT"
-keywords = ["nosleep", "powersave", "caffeine", "macOS"]
+keywords = ["nosleep", "powersave", "caffeine"]
 readme = "README.md"
 
 build = "build.rs"
