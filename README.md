@@ -4,7 +4,12 @@
 
 Cross-platform library to block the power save function in the OS.
 
-## TODO
-
-- [ ] Fix error handling cross-platform
-- [ ] Publish crate
+```rust
+use nosleep::{NoSleep, NoSleepType};
+let nosleep = NoSleep::new().unwrap();
+let handle = nosleep
+    .start(NoSleepType::PreventUserIdleDisplaySleep)
+    .unwrap();
+std::thread::sleep(std::time::Duration::from_millis(180_000));
+handle.stop().unwrap(); // Not strictly needed
+```
