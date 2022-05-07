@@ -22,3 +22,6 @@ nosleep-nix = { path = "../nosleep-nix", version = "0.2.0-rc.1" }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 nosleep-windows = { path = "../nosleep-windows", version = "0.2.0-rc.1" }
+
+[features]
+serde = ["nosleep-types/serde"]
