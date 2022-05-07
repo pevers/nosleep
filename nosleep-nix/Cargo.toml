@@ -2,7 +2,7 @@
 name = "nosleep-nix"
 description = "Block power save mode cross platform"
 authors = ["Peter Evers"]
-version = "0.2.0-rc.1"
+version = "0.2.0-rc.2"
 edition = "2021"
 rust-version = "1.57"
 homepage = "https://github.com/pevers/nosleep"
@@ -12,6 +12,6 @@ keywords = ["nosleep", "powersave", "caffeine"]
 readme = "README.md"
 
 [dependencies]
-nosleep-types = { path = "../nosleep-types", version = "0.2.0-rc.1" }
+nosleep-types = { path = "../nosleep-types", version = "0.2.0-rc.2" }
 dbus = "0.9.5"
 snafu = "0.7.0"

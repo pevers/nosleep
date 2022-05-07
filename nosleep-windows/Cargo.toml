@@ -2,7 +2,7 @@
 name = "nosleep-windows"
 description = "Block power save mode cross platform"
 authors = ["Peter Evers"]
-version = "0.2.0-rc.1"
+version = "0.2.0-rc.2"
 edition = "2021"
 rust-version = "1.57"
 homepage = "https://github.com/pevers/nosleep"
@@ -14,7 +14,7 @@ readme = "README.md"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-nosleep-types = { path = "../nosleep-types", version = "0.2.0-rc.1" }
+nosleep-types = { path = "../nosleep-types", version = "0.2.0-rc.2" }
 snafu = "0.7.0"
 
 [dependencies.windows]
