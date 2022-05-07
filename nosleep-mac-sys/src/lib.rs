@@ -45,7 +45,7 @@ fn nosleep_ns_string(nosleep_type: &NoSleepType) -> Id<NSString> {
 
 /// Returned by [`NoSleep::start`] to handle
 /// the power save block
-pub struct NoSleepHandle {
+struct NoSleepHandle {
     handle: u32,
 }
 
@@ -58,12 +58,15 @@ impl NoSleepHandle {
         Ok(())
     }
 }
-
-pub struct NoSleep {}
+pub struct NoSleep {
+    no_sleep_handle: Option<NoSleepHandle>
+}
 
 impl NoSleep {
     pub fn new() -> Result<NoSleep> {
-        Ok(NoSleep {})
+        Ok(NoSleep {
+            no_sleep_handle: None
+        })
     }
 
     /// Blocks the system from entering low-power (sleep) mode by
@@ -72,18 +75,26 @@ impl NoSleep {
     /// to cleanup the lock when [`self::stop`] is called.
     /// If [`self::stop`] is not called, then he lock will be cleaned up
     /// when the process PID exits.
-    pub fn start(&self, nosleep_type: NoSleepType) -> Result<NoSleepHandle> {
+    pub fn start(&mut self, nosleep_type: NoSleepType) -> Result<()> {
         let mut handle = 0u32;
         unsafe {
             let ret = sys::start(nosleep_ns_string(&nosleep_type).deref(), &mut handle);
             if ret == 0 {
-                return Ok(NoSleepHandle { handle });
+                self.no_sleep_handle = Some(NoSleepHandle { handle });
             }
         }
         PreventPowerSaveModeSnafu {
             option: nosleep_type,
         }
         .fail()
+    }
+
+    /// Stop blocking the system from entering power save mode
+    pub fn stop(&self) -> Result<()> {
+        if let Some(handle) = &self.no_sleep_handle {
+            handle.stop()?; 
+        }
+        Ok(())
     }
 }
 
@@ -100,7 +111,7 @@ mod tests {
 
     #[test]
     fn test_start() {
-        let nosleep = NoSleep::new().unwrap();
+        let mut nosleep = NoSleep::new().unwrap();
         nosleep
             .start(NoSleepType::PreventUserIdleDisplaySleep)
             .unwrap();
@@ -108,11 +119,11 @@ mod tests {
 
     #[test]
     fn test_stop() {
-        let nosleep = NoSleep::new().unwrap();
-        let handle = nosleep
+        let mut nosleep = NoSleep::new().unwrap();
+        nosleep
             .start(NoSleepType::PreventUserIdleDisplaySleep)
             .unwrap();
-        handle.stop().unwrap();
+        nosleep.stop().unwrap();
     }
 
     // #[test]
