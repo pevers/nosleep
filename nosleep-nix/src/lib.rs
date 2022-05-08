@@ -45,19 +45,17 @@ struct NoSleepHandleCookie {
 
 /// Returned by [`NoSleep::start`] to handle
 /// the power save block
-pub struct NoSleepHandle<'a> {
-    // Connection to the D-Bus
-    d_bus: &'a Connection,
+struct NoSleepHandle {
     // All the locks that needs cleanup
     cookies: Vec<NoSleepHandleCookie>,
 }
 
-impl NoSleepHandle<'_> {
+impl NoSleepHandle {
     /// Stop blocking the system from entering power save mode
-    pub fn stop(&self) -> Result<()> {
+    pub fn stop(&self, d_bus: &Connection) -> Result<()> {
         for cookie in &self.cookies {
             let msg = uninhibit_msg(&cookie.api, cookie.handle);
-            self.d_bus
+            d_bus
                 .send_with_reply_and_block(msg, std::time::Duration::from_millis(5000))
                 .context(DBusSnafu)?;
         }
@@ -68,6 +66,9 @@ impl NoSleepHandle<'_> {
 pub struct NoSleep {
     // Connection to the D-Bus
     d_bus: Connection,
+
+    // The unblock handle
+    no_sleep_handle: Option<NoSleepHandle>,
 }
 
 impl NoSleep {
@@ -76,20 +77,24 @@ impl NoSleep {
     pub fn new() -> Result<NoSleep> {
         Ok(NoSleep {
             d_bus: Connection::new_session().context(DBusSnafu)?,
+            no_sleep_handle: None,
         })
     }
 
     /// Blocks the system from entering low-power (sleep) mode.
     /// By making an synchronous call to the D-Bus.
-    /// Returns a [`NoSleepHandle`] which will be used internally
-    /// to cleanup the lock when [`self::stop`] is called.
-    pub fn start(&self, nosleep_type: NoSleepType) -> Result<NoSleepHandle> {
+    /// If [`self::stop`] is not called, then he lock will be cleaned up
+    /// when the bus is closed.
+    pub fn start(&mut self, nosleep_type: NoSleepType) -> Result<()> {
+        // Clear any previous handles held
+        self.stop()?;
+
         let response = self.inhibit(&DBusAPI::GnomeApi, &nosleep_type);
         if let Ok(cookie) = response {
-            return Ok(NoSleepHandle {
-                d_bus: &self.d_bus,
+            self.no_sleep_handle = Some(NoSleepHandle {
                 cookies: vec![cookie],
             });
+            return Ok(());
         }
         // Try again using the FreeDesktopPowerApi (we need two calls)
         let mut cookies: Vec<NoSleepHandleCookie> = vec![];
@@ -100,10 +105,16 @@ impl NoSleep {
         // Prevent suspension
         let cookie = self.inhibit(&DBusAPI::FreeDesktopPowerApi, &nosleep_type)?;
         cookies.push(cookie);
-        Ok(NoSleepHandle {
-            d_bus: &self.d_bus,
-            cookies,
-        })
+        self.no_sleep_handle = Some(NoSleepHandle { cookies });
+        Ok(())
+    }
+
+    /// Stop blocking the system from entering power save mode
+    pub fn stop(&self) -> Result<()> {
+        if let Some(handle) = &self.no_sleep_handle {
+            return handle.stop(&self.d_bus);
+        }
+        Ok(())
     }
 
     fn inhibit(&self, api: &DBusAPI, nosleep_type: &NoSleepType) -> Result<NoSleepHandleCookie> {
@@ -281,12 +292,12 @@ mod tests {
     #[test]
     #[ignore]
     fn test_start() {
-        let nosleep = NoSleep::new().unwrap();
-        let handle = nosleep
+        let mut nosleep = NoSleep::new().unwrap();
+        nosleep
             .start(NoSleepType::PreventUserIdleSystemSleep)
             .unwrap();
         std::thread::sleep(std::time::Duration::from_millis(2000));
-        handle.stop().unwrap();
+        nosleep.stop().unwrap();
         std::thread::sleep(std::time::Duration::from_millis(2000));
     }
 }
