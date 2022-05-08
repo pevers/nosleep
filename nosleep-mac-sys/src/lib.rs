@@ -60,13 +60,13 @@ impl NoSleepHandle {
 }
 pub struct NoSleep {
     // The unblock handle
-    no_sleep_handle: Option<NoSleepHandle>
+    no_sleep_handle: Option<NoSleepHandle>,
 }
 
 impl NoSleep {
     pub fn new() -> Result<NoSleep> {
         Ok(NoSleep {
-            no_sleep_handle: None
+            no_sleep_handle: None,
         })
     }
 
@@ -79,9 +79,7 @@ impl NoSleep {
         self.stop()?;
 
         let mut handle = 0u32;
-        let ret = unsafe {
-            sys::start(nosleep_ns_string(&nosleep_type).deref(), &mut handle)
-        };
+        let ret = unsafe { sys::start(nosleep_ns_string(&nosleep_type).deref(), &mut handle) };
         if ret != 0 {
             return PreventPowerSaveModeSnafu {
                 option: nosleep_type,
@@ -95,7 +93,7 @@ impl NoSleep {
     /// Stop blocking the system from entering power save mode
     pub fn stop(&self) -> Result<()> {
         if let Some(handle) = &self.no_sleep_handle {
-            handle.stop()?; 
+            handle.stop()?;
         }
         Ok(())
     }

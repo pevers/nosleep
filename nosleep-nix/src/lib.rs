@@ -68,7 +68,7 @@ pub struct NoSleep {
     d_bus: Connection,
 
     // The unblock handle
-    no_sleep_handle: Option<NoSleepHandle>
+    no_sleep_handle: Option<NoSleepHandle>,
 }
 
 impl NoSleep {
@@ -77,7 +77,7 @@ impl NoSleep {
     pub fn new() -> Result<NoSleep> {
         Ok(NoSleep {
             d_bus: Connection::new_session().context(DBusSnafu)?,
-            no_sleep_handle: None
+            no_sleep_handle: None,
         })
     }
 
@@ -105,9 +105,7 @@ impl NoSleep {
         // Prevent suspension
         let cookie = self.inhibit(&DBusAPI::FreeDesktopPowerApi, &nosleep_type)?;
         cookies.push(cookie);
-        self.no_sleep_handle = Some(NoSleepHandle {
-            cookies,
-        });
+        self.no_sleep_handle = Some(NoSleepHandle { cookies });
         Ok(())
     }
 

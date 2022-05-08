@@ -94,7 +94,7 @@ impl NoSleepHandle {
 
 pub struct NoSleep {
     // Handle to unlock the power save block
-    no_sleep_handle: Option<NoSleepHandle>
+    no_sleep_handle: Option<NoSleepHandle>,
 }
 
 fn create_power_request(power_request_type: POWER_REQUEST_TYPE) -> Result<HANDLE> {
@@ -120,7 +120,7 @@ fn create_power_request(power_request_type: POWER_REQUEST_TYPE) -> Result<HANDLE
 impl NoSleep {
     pub fn new() -> Result<NoSleep> {
         Ok(NoSleep {
-            no_sleep_handle: None
+            no_sleep_handle: None,
         })
     }
 
