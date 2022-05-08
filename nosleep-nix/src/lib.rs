@@ -91,9 +91,10 @@ impl NoSleep {
 
         let response = self.inhibit(&DBusAPI::GnomeApi, &nosleep_type);
         if let Ok(cookie) = response {
-            return Ok(NoSleepHandle {
+            self.no_sleep_handle = Some(NoSleepHandle {
                 cookies: vec![cookie],
             });
+            return Ok(());
         }
         // Try again using the FreeDesktopPowerApi (we need two calls)
         let mut cookies: Vec<NoSleepHandleCookie> = vec![];
@@ -112,8 +113,8 @@ impl NoSleep {
 
     /// Stop blocking the system from entering power save mode
     pub fn stop(&self) -> Result<()> {
-        if let Some(handle) = self.no_sleep_handle {
-            handle.stop(&self.d_bus);
+        if let Some(handle) = &self.no_sleep_handle {
+            return handle.stop(&self.d_bus);
         }
         Ok(())
     }
