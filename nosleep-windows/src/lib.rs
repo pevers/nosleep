@@ -60,8 +60,7 @@ impl IntoPWSTR for String {
 
 /// Returned by [`NoSleep::start`] to handle
 /// the power save block
-pub struct NoSleepHandle<'a> {
-    phantom: PhantomData<'a>,
+pub struct NoSleepHandle {
     // Handle to the PowerRequestSystemRequired block
     system_handle: HANDLE,
     // Handle to the PowerRequestDisplayRequired block
