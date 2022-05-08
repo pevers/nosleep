@@ -6,11 +6,12 @@
 //! # use std::{time::Duration, thread};
 //! # use nosleep::*;
 //! # fn main() -> Result<(), Box<dyn Error>> {
-//!    let nosleep = NoSleep::new().unwrap();
-//!    let handle = nosleep.start(NoSleepType::PreventUserIdleDisplaySleep)?;
+//!    let nosleep = NoSleep::new()?;
+//!    nosleep.start(NoSleepType::PreventUserIdleDisplaySleep)?;
 //!    // Depending on the platform, the block will hold
 //!    // until either nosleep will be dropped (Linux)
-//!    // or the process exits (macOS)
+//!    // or the process exits (macOS) or you manually
+//!    // call `nosleep.stop()`
 //! #  Ok(())
 //! # }
 //! ```
@@ -32,11 +33,11 @@ mod tests {
 
     #[test]
     fn test_block_platform_agnostic() {
-        let nosleep = NoSleep::new().unwrap();
-        let handle = nosleep
+        let mut nosleep = NoSleep::new().unwrap();
+        nosleep
             .start(NoSleepType::PreventUserIdleDisplaySleep)
             .unwrap();
         std::thread::sleep(std::time::Duration::from_millis(2000));
-        handle.stop().unwrap();
+        nosleep.stop().unwrap();
     }
 }

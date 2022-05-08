@@ -148,7 +148,7 @@ mod tests {
 
     #[test]
     fn test_start() {
-        let nosleep = NoSleep::new().unwrap();
+        let mut nosleep = NoSleep::new().unwrap();
         nosleep
             .start(NoSleepType::PreventUserIdleDisplaySleep)
             .unwrap();
@@ -156,10 +156,10 @@ mod tests {
 
     #[test]
     fn test_stop() {
-        let nosleep = NoSleep::new().unwrap();
-        let handle = nosleep
+        let mut nosleep = NoSleep::new().unwrap();
+        nosleep
             .start(NoSleepType::PreventUserIdleDisplaySleep)
             .unwrap();
-        handle.stop().unwrap();
+        nosleep.stop().unwrap();
     }
 }
