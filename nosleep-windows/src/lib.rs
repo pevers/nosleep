@@ -147,6 +147,13 @@ impl NoSleep {
         });
         Ok(())
     }
+
+    pub fn stop(&self) -> Result<()> {
+        if let Some(handle) = self.no_sleep_handle {
+            return handle.stop();
+        }
+        Ok(())
+    }
 }
 
 #[cfg(test)]
