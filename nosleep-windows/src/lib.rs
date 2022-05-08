@@ -128,7 +128,7 @@ impl NoSleep {
     /// making a call to the Windows `PowerCreateRequest`/`PowerSetRequest` system call.
     /// If [`self::stop`] is not called, then he lock will be cleaned up
     /// when NoSleep is dropped.
-    pub fn start(&self, nosleep_type: NoSleepType) -> Result<()> {
+    pub fn start(&mut self, nosleep_type: NoSleepType) -> Result<()> {
         // Clear any previous lock held
         self.stop()?;
 
@@ -149,7 +149,7 @@ impl NoSleep {
     }
 
     pub fn stop(&self) -> Result<()> {
-        if let Some(handle) = self.no_sleep_handle {
+        if let Some(handle) = &self.no_sleep_handle {
             return handle.stop();
         }
         Ok(())
