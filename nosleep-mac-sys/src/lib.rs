@@ -79,16 +79,17 @@ impl NoSleep {
         self.stop()?;
 
         let mut handle = 0u32;
-        unsafe {
-            let ret = sys::start(nosleep_ns_string(&nosleep_type).deref(), &mut handle);
-            if ret == 0 {
-                self.no_sleep_handle = Some(NoSleepHandle { handle });
+        let ret = unsafe {
+            sys::start(nosleep_ns_string(&nosleep_type).deref(), &mut handle)
+        };
+        if ret != 0 {
+            return PreventPowerSaveModeSnafu {
+                option: nosleep_type,
             }
+            .fail();
         }
-        PreventPowerSaveModeSnafu {
-            option: nosleep_type,
-        }
-        .fail()
+        self.no_sleep_handle = Some(NoSleepHandle { handle });
+        Ok(())
     }
 
     /// Stop blocking the system from entering power save mode

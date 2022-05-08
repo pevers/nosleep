@@ -92,7 +92,10 @@ impl NoSleepHandle {
     }
 }
 
-pub struct NoSleep {}
+pub struct NoSleep {
+    // Handle to unlock the power save block
+    no_sleep_handle: Option<NoSleepHandle>
+}
 
 fn create_power_request(power_request_type: POWER_REQUEST_TYPE) -> Result<HANDLE> {
     let reason = REASON_CONTEXT {
@@ -116,16 +119,19 @@ fn create_power_request(power_request_type: POWER_REQUEST_TYPE) -> Result<HANDLE
 
 impl NoSleep {
     pub fn new() -> Result<NoSleep> {
-        Ok(NoSleep {})
+        Ok(NoSleep {
+            no_sleep_handle: None
+        })
     }
 
     /// Blocks the system from entering low-power (sleep) mode by
     /// making a call to the Windows `PowerCreateRequest`/`PowerSetRequest` system call.
-    /// Returns a [`NoSleepHandle`] which will be used internally
-    /// to cleanup the lock when [`self::stop`] is called.
     /// If [`self::stop`] is not called, then he lock will be cleaned up
     /// when NoSleep is dropped.
-    pub fn start(&self, nosleep_type: NoSleepType) -> Result<NoSleepHandle> {
+    pub fn start(&self, nosleep_type: NoSleepType) -> Result<()> {
+        // Clear any previous lock held
+        self.stop()?;
+
         // TODO:
         // PowerRequestSystemRequired implies PowerRequestExsecutionRequired
         // So we don't have to check the Windows version?
@@ -135,10 +141,11 @@ impl NoSleep {
         } else {
             None
         };
-        Ok(NoSleepHandle {
+        self.no_sleep_handle = Some(NoSleepHandle {
             system_handle,
             display_handle,
-        })
+        });
+        Ok(())
     }
 }
 
