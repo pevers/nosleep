@@ -59,6 +59,7 @@ impl NoSleepHandle {
     }
 }
 pub struct NoSleep {
+    // The unblock handle
     no_sleep_handle: Option<NoSleepHandle>
 }
 
@@ -71,11 +72,12 @@ impl NoSleep {
 
     /// Blocks the system from entering low-power (sleep) mode by
     /// making a synchronous call to the macOS `IOPMAssertionCreateWithName` system call.
-    /// Returns a [`NoSleepHandle`] which will be used internally
-    /// to cleanup the lock when [`self::stop`] is called.
     /// If [`self::stop`] is not called, then he lock will be cleaned up
     /// when the process PID exits.
     pub fn start(&mut self, nosleep_type: NoSleepType) -> Result<()> {
+        // Clear any previous handles held
+        self.stop()?;
+
         let mut handle = 0u32;
         unsafe {
             let ret = sys::start(nosleep_ns_string(&nosleep_type).deref(), &mut handle);
