@@ -45,19 +45,17 @@ struct NoSleepHandleCookie {
 
 /// Returned by [`NoSleep::start`] to handle
 /// the power save block
-struct NoSleepHandle<'a> {
-    // Connection to the D-Bus
-    d_bus: &'a Connection,
+struct NoSleepHandle {
     // All the locks that needs cleanup
     cookies: Vec<NoSleepHandleCookie>,
 }
 
-impl NoSleepHandle<'_> {
+impl NoSleepHandle {
     /// Stop blocking the system from entering power save mode
-    pub fn stop(&self) -> Result<()> {
+    pub fn stop(&self, d_bus: &Connection) -> Result<()> {
         for cookie in &self.cookies {
             let msg = uninhibit_msg(&cookie.api, cookie.handle);
-            self.d_bus
+            d_bus
                 .send_with_reply_and_block(msg, std::time::Duration::from_millis(5000))
                 .context(DBusSnafu)?;
         }
@@ -70,7 +68,7 @@ pub struct NoSleep {
     d_bus: Connection,
 
     // The unblock handle
-    no_sleep_handle: Option<NoSleepHandle<_>>
+    no_sleep_handle: Option<NoSleepHandle>
 }
 
 impl NoSleep {
@@ -94,7 +92,6 @@ impl NoSleep {
         let response = self.inhibit(&DBusAPI::GnomeApi, &nosleep_type);
         if let Ok(cookie) = response {
             return Ok(NoSleepHandle {
-                d_bus: &self.d_bus,
                 cookies: vec![cookie],
             });
         }
@@ -108,7 +105,6 @@ impl NoSleep {
         let cookie = self.inhibit(&DBusAPI::FreeDesktopPowerApi, &nosleep_type)?;
         cookies.push(cookie);
         self.no_sleep_handle = Some(NoSleepHandle {
-            d_bus: &self.d_bus,
             cookies,
         });
         Ok(())
@@ -116,11 +112,8 @@ impl NoSleep {
 
     /// Stop blocking the system from entering power save mode
     pub fn stop(&self) -> Result<()> {
-        for cookie in &self.cookies {
-            let msg = uninhibit_msg(&cookie.api, cookie.handle);
-            self.d_bus
-                .send_with_reply_and_block(msg, std::time::Duration::from_millis(5000))
-                .context(DBusSnafu)?;
+        if let Some(handle) = self.no_sleep_handle {
+            handle.stop(&self.d_bus);
         }
         Ok(())
     }
