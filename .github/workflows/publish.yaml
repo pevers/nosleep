@@ -9,48 +9,48 @@ on:
 name: Publish
 
 jobs:
-  # linux:
-  #   defaults:
-  #     run:
-  #       working-directory: ./nosleep-nix
-  #   name: Publish Linux version
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     matrix:
-  #       rust:
-  #         - stable
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - name: Install dependencies
-  #       run: sudo apt-get install --no-install-recommends -y libdbus-1-dev dbus at-spi2-core
-  #     - uses: actions-rs/toolchain@v1
-  #       with:
-  #         profile: minimal
-  #         toolchain: ${{ matrix.rust }}
-  #         override: true
-  #     - run: cargo publish --token ${CRATES_TOKEN}
-  #       env:
-  #         CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
-  # mac:
-  #   defaults:
-  #     run:
-  #       working-directory: ./nosleep-mac-sys
-  #   name: Publish macOS version
-  #   runs-on: macos-latest
-  #   strategy:
-  #     matrix:
-  #       rust:
-  #         - stable
-  #   steps:
-  #     - uses: actions/checkout@v2
-  #     - uses: actions-rs/toolchain@v1
-  #       with:
-  #         profile: minimal
-  #         toolchain: ${{ matrix.rust }}
-  #         override: true
-  #     - run: cargo publish --token ${CRATES_TOKEN}
-  #       env:
-  #         CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
+  linux:
+    defaults:
+      run:
+        working-directory: ./nosleep-nix
+    name: Publish Linux version
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - stable
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: sudo apt-get install --no-install-recommends -y libdbus-1-dev dbus at-spi2-core
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - run: cargo publish --token ${CRATES_TOKEN}
+        env:
+          CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
+  mac:
+    defaults:
+      run:
+        working-directory: ./nosleep-mac-sys
+    name: Publish macOS version
+    runs-on: macos-latest
+    strategy:
+      matrix:
+        rust:
+          - stable
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - run: cargo publish --token ${CRATES_TOKEN}
+        env:
+          CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}
   windows:
     defaults:
       run:
@@ -75,7 +75,7 @@ jobs:
     defaults:
       run:
         working-directory: ./nosleep
-    needs: [windows]
+    needs: [linux, mac, windows]
     name: Publish root crate
     runs-on: ubuntu-latest
     strategy:
