@@ -2,7 +2,7 @@
 name = "nosleep"
 description = "Block power save mode cross platform"
 authors = ["Peter Evers"]
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 rust-version = "1.57"
 homepage = "https://github.com/pevers/nosleep"
@@ -12,16 +12,16 @@ keywords = ["nosleep", "powersave", "caffeine"]
 readme = "../README.md"
 
 [dependencies]
-nosleep-types = { path = "../nosleep-types", version = "0.2.0" }
+nosleep-types = { path = "../nosleep-types", version = "0.2.1" }
 
 [target.'cfg(target_os = "macos")'.dependencies]
-nosleep-mac-sys = { path = "../nosleep-mac-sys", version = "0.2.0" }
+nosleep-mac-sys = { path = "../nosleep-mac-sys", version = "0.2.1" }
 
 [target.'cfg(target_os = "linux")'.dependencies]
-nosleep-nix = { path = "../nosleep-nix", version = "0.2.0" }
+nosleep-nix = { path = "../nosleep-nix", version = "0.2.1" }
 
 [target.'cfg(target_os = "windows")'.dependencies]
-nosleep-windows = { path = "../nosleep-windows", version = "0.2.0" }
+nosleep-windows = { path = "../nosleep-windows", version = "0.2.1" }
 
 [features]
 serde = ["nosleep-types/serde"]
