@@ -194,7 +194,7 @@ fn uninhibit_msg(api: &DBusAPI, handle: u32) -> dbus::Message {
         DBusAPI::FreeDesktopPowerApi => dbus::Message::call_with_args(
             "org.freedesktop.PowerManagement",
             "/org/freedesktop/PowerManagement/Inhibit",
-            "org.freedesktop.PowerManagment.Inhibit",
+            "org.freedesktop.PowerManagement.Inhibit",
             "UnInhibit",
             (handle,),
         ),
