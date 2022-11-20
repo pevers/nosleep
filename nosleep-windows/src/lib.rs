@@ -71,7 +71,7 @@ impl NoSleepHandle {
     /// Stop blocking the system from entering power save mode
     pub fn stop(self: &NoSleepHandle) -> Result<()> {
         unsafe {
-            if !PowerClearRequest(&self.system_handle, PowerRequestSystemRequired).as_bool() {
+            if !PowerClearRequest(self.system_handle, PowerRequestSystemRequired).as_bool() {
                 return ClearPowerSaveModeSnafu {
                     option: PowerRequestSystemRequired,
                 }
@@ -79,7 +79,7 @@ impl NoSleepHandle {
             }
             if !&self
                 .display_handle
-                .map(|h| PowerClearRequest(&h, PowerRequestDisplayRequired).as_bool())
+                .map(|h| PowerClearRequest(h, PowerRequestDisplayRequired).as_bool())
                 .unwrap_or(true)
             {
                 return ClearPowerSaveModeSnafu {
@@ -107,7 +107,7 @@ fn create_power_request(power_request_type: POWER_REQUEST_TYPE) -> Result<HANDLE
     };
     unsafe {
         let handle = PowerCreateRequest(&reason).context(CouldNotCreatePowerRequestSnafu)?;
-        if PowerSetRequest(&handle, power_request_type).as_bool() {
+        if PowerSetRequest(handle, power_request_type).as_bool() {
             return Ok(handle);
         }
         PreventPowerSaveModeSnafu {
