@@ -75,7 +75,7 @@ jobs:
     defaults:
       run:
         working-directory: ./nosleep
-    needs: [linux, macos, windows]
+    needs: [linux, mac, windows]
     name: Publish root crate
     runs-on: ubuntu-latest
     strategy:
