@@ -2,7 +2,7 @@
 name = "nosleep-mac-sys"
 description = "Block power save mode for macOS"
 authors = ["Peter Evers"]
-version = "0.2.1"
+version = "0.3.0"
 edition = "2021"
 homepage = "https://github.com/pevers/nosleep-mac-sys"
 repository = "https://github.com/pevers/nosleep-mac-sys"

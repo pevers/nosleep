@@ -286,9 +286,19 @@ mod tests {
     // Can only run with an active Gnome Session
     #[test]
     #[ignore]
-    fn test_start() {
+    fn test_prevent_system_sleep() {
         let mut nosleep = NoSleep::new().unwrap();
         nosleep.prevent_system_sleep().unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(2000));
+        nosleep.stop().unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(2000));
+    }
+
+    #[test]
+    #[ignore]
+    fn test_prevent_display_sleep() {
+        let mut nosleep = NoSleep::new().unwrap();
+        nosleep.prevent_display_sleep().unwrap();
         std::thread::sleep(std::time::Duration::from_millis(2000));
         nosleep.stop().unwrap();
         std::thread::sleep(std::time::Duration::from_millis(2000));

@@ -5,10 +5,10 @@
 Cross-platform library to block the power save function in the OS.
 
 ```rust
-use nosleep::{NoSleep, NoSleepType};
+use nosleep::{NoSleep, NoSleepTrait};
 let mut nosleep = NoSleep::new().unwrap();
 nosleep
-    .start(NoSleepType::PreventUserIdleDisplaySleep)
+    .prevent_display_sleep() // or prevent_system_sleep()
     .unwrap();
 std::thread::sleep(std::time::Duration::from_millis(180_000));
 nosleep.stop().unwrap(); // Not strictly needed

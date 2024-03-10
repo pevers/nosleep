@@ -88,9 +88,15 @@ mod tests {
     use super::NoSleep;
 
     #[test]
-    fn test_start() {
+    fn test_prevent_display_sleep() {
         let mut nosleep = NoSleep::new().unwrap();
         nosleep.prevent_display_sleep().unwrap();
+    }
+
+    #[test]
+    fn test_prevent_system_sleep() {
+        let mut nosleep = NoSleep::new().unwrap();
+        nosleep.prevent_system_sleep().unwrap();
     }
 
     #[test]

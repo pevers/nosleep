@@ -12,6 +12,4 @@ readme = "README.md"
 
 [dependencies]
 nosleep-types = { path = "../nosleep-types", version = "0.3.0" }
-
-[target.'cfg(unix)'.dependencies]
 dbus = "0.9.5"
