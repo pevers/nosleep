@@ -6,21 +6,9 @@
 //! https://chromium.googlesource.com/chromium/src.git/+/refs/heads/main/services/device/wake_lock/power_save_blocker/power_save_blocker_linux.cc
 
 use dbus::blocking::{BlockingSender, Connection};
-use snafu::{prelude::*, Backtrace};
+use nosleep_types::{NoSleepError, NoSleepTrait};
 
-#[derive(Debug, Snafu)]
-pub enum Error {
-    #[snafu(display("General D-Bus Error"))]
-    DBus {
-        source: dbus::Error,
-        backtrace: Backtrace,
-    },
-
-    #[snafu(display("Invalid response from D-Bus"))]
-    InvalidResponse { backtrace: Backtrace },
-}
-
-#[dervie(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 pub enum NoSleepType {
     PreventUserIdleDisplaySleep,
     PreventUserIdleSystemSleep,
@@ -51,20 +39,11 @@ pub struct NoSleep {
     d_bus: Connection,
 
     // The handles to all the locks
-    no_sleep_handles: Vec<NoSleepHandle>
+    no_sleep_handles: Vec<NoSleepHandle>,
 }
 
-impl NoSleepTrait for NoSleep {
-    /// Creates a new NoSleep type and connects to the D-Bus.
-    /// The session is automatically closed when the instance is dropped.
-    fn new() -> Result<NoSleep, > {
-        Ok(NoSleep {
-            d_bus: Connection::new_session().context(DBusSnafu)?,
-            no_sleep_handles: vec![],
-        })
-    }
-
-    fn prevent_display_sleep(&mut self) -> Result<(), NoSleepError> {
+impl NoSleep {
+    fn prevent_sleep(&mut self, nosleep_type: NoSleepType) -> Result<(), NoSleepError> {
         // Clear any previous handles held
         self.stop()?;
 
@@ -73,37 +52,74 @@ impl NoSleepTrait for NoSleep {
             self.no_sleep_handles = vec![handle];
             return Ok(());
         }
-        // Try again using the FreeDesktopPowerApi (we need two calls)
+
+        // Try again using the FreeDesktopPowerApi for which we need two calls
         let mut handles: Vec<NoSleepHandle> = vec![];
         if nosleep_type == NoSleepType::PreventUserIdleDisplaySleep {
-            let handle = self.inhibit(&DBusAPI::FreeDesktopScreenSaverAPI, NoSleepType::PreventUserIdleDisplaySleep)?;
+            let handle = self.inhibit(
+                &DBusAPI::FreeDesktopScreenSaverAPI,
+                &NoSleepType::PreventUserIdleDisplaySleep,
+            )?;
             handles.push(handle);
         }
         // Prevent suspension
-        let handle = self.inhibit(&DBusAPI::FreeDesktopPowerApi, NoSleepType::PreventUserIdleDisplaySleep)?;
+        let handle = self.inhibit(&DBusAPI::FreeDesktopPowerApi, &nosleep_type)?;
         handles.push(handle);
         self.no_sleep_handles = handles;
         Ok(())
     }
 
-    fn stop(&self) -> Result<(), NoSleepError> {
-        for handle in &self.no_sleep_handles {
-            let msg = uninhibit_msg(&handle.api, handle.handle);
-            d_bus
-                .send_with_reply_and_block(msg, std::time::Duration::from_millis(5000))
-                .map_err(|e| NoSleepError::StopLock { reason: e.to_string() })?;
-        }
-        Ok(())
-    }
-
-    fn inhibit(&self, api: &DBusAPI, nosleep_type: &NoSleepType) -> Result<NoSleepHandle> {
+    fn inhibit(
+        &self,
+        api: &DBusAPI,
+        nosleep_type: &NoSleepType,
+    ) -> Result<NoSleepHandle, NoSleepError> {
         let msg = inhibit_msg(api, nosleep_type);
         let response = self
             .d_bus
             .send_with_reply_and_block(msg, std::time::Duration::from_millis(5000))
-            .context(DBusSnafu)?;
-        let handle = response.get1().context(InvalidResponseSnafu)?;
-        Ok(NoSleepHandle { handle, api: *api })
+            .map_err(|e| NoSleepError::DBus {
+                reason: e.to_string(),
+            })?;
+        match response.get1::<u32>() {
+            Some(handle) => Ok(NoSleepHandle { handle, api: *api }),
+            None => Err(NoSleepError::DBus {
+                reason: "Invalid message or type".to_string(),
+            }),
+        }
+    }
+}
+
+impl NoSleepTrait for NoSleep {
+    /// Creates a new NoSleep type and connects to the D-Bus.
+    /// The session is automatically closed when the instance is dropped.
+    fn new() -> Result<NoSleep, NoSleepError> {
+        Ok(NoSleep {
+            d_bus: Connection::new_session().map_err(|e| NoSleepError::Init {
+                reason: e.to_string(),
+            })?,
+            no_sleep_handles: vec![],
+        })
+    }
+
+    fn prevent_display_sleep(&mut self) -> Result<(), NoSleepError> {
+        self.prevent_sleep(NoSleepType::PreventUserIdleDisplaySleep)
+    }
+
+    fn prevent_system_sleep(&mut self) -> Result<(), NoSleepError> {
+        self.prevent_sleep(NoSleepType::PreventUserIdleSystemSleep)
+    }
+
+    fn stop(&mut self) -> Result<(), NoSleepError> {
+        for handle in &self.no_sleep_handles {
+            let msg = uninhibit_msg(&handle.api, handle.handle);
+            self.d_bus
+                .send_with_reply_and_block(msg, std::time::Duration::from_millis(5000))
+                .map_err(|e| NoSleepError::StopLock {
+                    reason: e.to_string(),
+                })?;
+        }
+        Ok(())
     }
 }
 
@@ -272,9 +288,7 @@ mod tests {
     #[ignore]
     fn test_start() {
         let mut nosleep = NoSleep::new().unwrap();
-        nosleep
-            .start(NoSleepType::PreventUserIdleSystemSleep)
-            .unwrap();
+        nosleep.prevent_system_sleep().unwrap();
         std::thread::sleep(std::time::Duration::from_millis(2000));
         nosleep.stop().unwrap();
         std::thread::sleep(std::time::Duration::from_millis(2000));

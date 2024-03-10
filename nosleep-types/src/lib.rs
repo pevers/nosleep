@@ -2,6 +2,11 @@ use snafu::Snafu;
 
 #[derive(Debug, Snafu)]
 pub enum NoSleepError {
+    #[snafu(display("Could not initialize: {:?}", reason))]
+    Init
+    {
+        reason: String,
+    },
     #[snafu(display("Could not prevent display sleep: {:?}", reason))]
     PreventDisplaySleep 
     {
