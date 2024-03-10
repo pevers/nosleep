@@ -3,25 +3,13 @@ use snafu::Snafu;
 #[derive(Debug, Snafu)]
 pub enum NoSleepError {
     #[snafu(display("Could not initialize: {:?}", reason))]
-    Init
-    {
-        reason: String,
-    },
+    Init { reason: String },
     #[snafu(display("Could not prevent sleep: {:?}", reason))]
-    PreventSleep
-    {
-        reason: String,
-    },
+    PreventSleep { reason: String },
     #[snafu(display("DBus error: {:?}", reason))]
-    DBus
-    {
-        reason: String,
-    },
+    DBus { reason: String },
     #[snafu(display("Could not stop lock: {:?}", reason))]
-    StopLock
-    {
-        reason: String,
-    },
+    StopLock { reason: String },
 }
 
 pub trait NoSleepTrait {
