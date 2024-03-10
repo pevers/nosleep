@@ -4,11 +4,10 @@ description = "Block power save mode for macOS"
 authors = ["Peter Evers"]
 version = "0.2.1"
 edition = "2021"
-rust-version = "1.57"
 homepage = "https://github.com/pevers/nosleep-mac-sys"
 repository = "https://github.com/pevers/nosleep-mac-sys"
 license = "MIT"
-keywords = ["nosleep", "powersave", "caffeine"]
+keywords = ["nosleep", "powersave", "caffeine", "prevent-sleep", "prevent-display-lock", "prevent-system-lock"]
 readme = "README.md"
 
 build = "build.rs"
@@ -17,7 +16,7 @@ build = "build.rs"
 objc-foundation = "0.1.1"
 objc_id = "0.1.1"
 snafu = "0.7.0"
-nosleep-types = { path = "../nosleep-types", version = "0.2.0" }
+nosleep-types = { path = "../nosleep-types", version = "0.3.0" }
 
 [build-dependencies]
 cc = "1.0.73"
