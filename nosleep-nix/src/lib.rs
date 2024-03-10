@@ -78,12 +78,12 @@ impl NoSleep {
         let response = self
             .d_bus
             .send_with_reply_and_block(msg, std::time::Duration::from_millis(5000))
-            .map_err(|e| NoSleepError::DBus {
+            .map_err(|e| NoSleepError::PreventSleep {
                 reason: e.to_string(),
             })?;
         match response.get1::<u32>() {
             Some(handle) => Ok(NoSleepHandle { handle, api: *api }),
-            None => Err(NoSleepError::DBus {
+            None => Err(NoSleepError::PreventSleep {
                 reason: "Invalid message or type".to_string(),
             }),
         }

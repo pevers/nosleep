@@ -12,6 +12,11 @@ pub enum NoSleepError {
     {
         reason: String,
     },
+    #[snafu(display("DBus error: {:?}", reason))]
+    DBus
+    {
+        reason: String,
+    },
     #[snafu(display("Could not stop lock: {:?}", reason))]
     StopLock
     {
