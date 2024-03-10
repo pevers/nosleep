@@ -36,10 +36,15 @@ impl NoSleepTrait for NoSleep {
         self.stop()?;
 
         let mut handle = 0u32;
-        let ret = unsafe { sys::start(NSString::from_str("PreventUserIdleDisplaySleep").deref(), &mut handle) };
+        let ret = unsafe {
+            sys::start(
+                NSString::from_str("PreventUserIdleDisplaySleep").deref(),
+                &mut handle,
+            )
+        };
         if ret != 0 {
-            return Err(NoSleepError::PreventDisplaySleep {
-                reason: ret.to_string()
+            return Err(NoSleepError::PreventSleep {
+                reason: ret.to_string(),
             });
         }
         self.no_sleep_handle = Some(handle);
@@ -50,10 +55,15 @@ impl NoSleepTrait for NoSleep {
         self.stop()?;
 
         let mut handle = 0u32;
-        let ret = unsafe { sys::start(NSString::from_str("PreventUserIdleSystemSleep").deref(), &mut handle) };
+        let ret = unsafe {
+            sys::start(
+                NSString::from_str("PreventUserIdleSystemSleep").deref(),
+                &mut handle,
+            )
+        };
         if ret != 0 {
-            return Err(NoSleepError::PreventSystemSleep {
-                reason: ret.to_string()
+            return Err(NoSleepError::PreventSleep {
+                reason: ret.to_string(),
             });
         }
         self.no_sleep_handle = Some(handle);
@@ -80,17 +90,13 @@ mod tests {
     #[test]
     fn test_start() {
         let mut nosleep = NoSleep::new().unwrap();
-        nosleep
-            .prevent_display_sleep()
-            .unwrap();
+        nosleep.prevent_display_sleep().unwrap();
     }
 
     #[test]
     fn test_stop() {
         let mut nosleep = NoSleep::new().unwrap();
-        nosleep
-            .prevent_display_sleep()
-            .unwrap();
+        nosleep.prevent_display_sleep().unwrap();
         nosleep.stop().unwrap();
     }
 }

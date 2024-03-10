@@ -7,13 +7,8 @@ pub enum NoSleepError {
     {
         reason: String,
     },
-    #[snafu(display("Could not prevent display sleep: {:?}", reason))]
-    PreventDisplaySleep 
-    {
-        reason: String,
-    },
-    #[snafu(display("Could not prevent system sleep: {:?}", reason))]
-    PreventSystemSleep
+    #[snafu(display("Could not prevent sleep: {:?}", reason))]
+    PreventSleep
     {
         reason: String,
     },
