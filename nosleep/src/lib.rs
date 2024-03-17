@@ -16,6 +16,8 @@
 //! # }
 //! ```
 
+pub use nosleep_types::{NoSleepError, NoSleepTrait};
+
 #[cfg(target_os = "macos")]
 pub use nosleep_mac_sys::*;
 
