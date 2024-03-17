@@ -1,13 +1,30 @@
-#[cfg(feature = "serde")]
-use serde::{Deserialize, Serialize};
+use snafu::Snafu;
 
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum NoSleepType {
+#[derive(Debug, Snafu)]
+pub enum NoSleepError {
+    #[snafu(display("Could not initialize: {:?}", reason))]
+    Init { reason: String },
+    #[snafu(display("Could not prevent sleep: {:?}", reason))]
+    PreventSleep { reason: String },
+    #[snafu(display("DBus error: {:?}", reason))]
+    DBus { reason: String },
+    #[snafu(display("Could not stop lock: {:?}", reason))]
+    StopLock { reason: String },
+}
+
+pub trait NoSleepTrait {
+    fn new() -> Result<Self, NoSleepError>
+    where
+        Self: Sized;
+
     /// Prevents the display from dimming automatically.
     /// For example: playing a video.
-    PreventUserIdleDisplaySleep,
+    fn prevent_display_sleep(&mut self) -> Result<(), NoSleepError>;
+
     /// Prevents the system from sleeping automatically due to a lack of user activity.
     /// For example: downloading a file in the background.
-    PreventUserIdleSystemSleep,
+    fn prevent_system_sleep(&mut self) -> Result<(), NoSleepError>;
+
+    /// Cancels any previous call to `prevent_display_sleep` or `prevent_system_sleep`.
+    fn stop(&mut self) -> Result<(), NoSleepError>;
 }

@@ -7,7 +7,7 @@
 //! # use nosleep::*;
 //! # fn main() -> Result<(), Box<dyn Error>> {
 //!    let nosleep = NoSleep::new()?;
-//!    nosleep.start(NoSleepType::PreventUserIdleDisplaySleep)?;
+//!    nosleep.prevent_display_sleep()?;
 //!    // Depending on the platform, the block will hold
 //!    // until either nosleep will be dropped (Linux)
 //!    // or the process exits (macOS) or you manually
@@ -15,8 +15,6 @@
 //! #  Ok(())
 //! # }
 //! ```
-
-pub use nosleep_types::NoSleepType;
 
 #[cfg(target_os = "macos")]
 pub use nosleep_mac_sys::*;
@@ -29,14 +27,14 @@ pub use nosleep_windows::*;
 
 #[cfg(test)]
 mod tests {
+    use nosleep_types::NoSleepTrait;
+
     use crate::*;
 
     #[test]
     fn test_block_platform_agnostic() {
         let mut nosleep = NoSleep::new().unwrap();
-        nosleep
-            .start(NoSleepType::PreventUserIdleDisplaySleep)
-            .unwrap();
+        nosleep.prevent_display_sleep().unwrap();
         std::thread::sleep(std::time::Duration::from_millis(2000));
         nosleep.stop().unwrap();
     }

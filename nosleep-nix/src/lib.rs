@@ -6,22 +6,13 @@
 //! https://chromium.googlesource.com/chromium/src.git/+/refs/heads/main/services/device/wake_lock/power_save_blocker/power_save_blocker_linux.cc
 
 use dbus::blocking::{BlockingSender, Connection};
-use nosleep_types::NoSleepType;
-use snafu::{prelude::*, Backtrace};
+use nosleep_types::{NoSleepError, NoSleepTrait};
 
-#[derive(Debug, Snafu)]
-pub enum Error {
-    #[snafu(display("General D-Bus Error"))]
-    DBus {
-        source: dbus::Error,
-        backtrace: Backtrace,
-    },
-
-    #[snafu(display("Invalid response from D-Bus"))]
-    InvalidResponse { backtrace: Backtrace },
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+pub enum NoSleepType {
+    PreventUserIdleDisplaySleep,
+    PreventUserIdleSystemSleep,
 }
-
-pub type Result<T, E = Error> = std::result::Result<T, E>;
 
 #[derive(Debug, Copy, Clone)]
 enum DBusAPI {
@@ -36,95 +27,99 @@ enum GnomeAPIInhibitFlags {
     InhibitMarkSessionIdle = 8,
 }
 
-struct NoSleepHandleCookie {
+struct NoSleepHandle {
     // Handle to a locks being held
     handle: u32,
     // The API used to acquire the lock
     api: DBusAPI,
 }
 
-/// Returned by [`NoSleep::start`] to handle
-/// the power save block
-struct NoSleepHandle {
-    // All the locks that needs cleanup
-    cookies: Vec<NoSleepHandleCookie>,
-}
-
-impl NoSleepHandle {
-    /// Stop blocking the system from entering power save mode
-    pub fn stop(&self, d_bus: &Connection) -> Result<()> {
-        for cookie in &self.cookies {
-            let msg = uninhibit_msg(&cookie.api, cookie.handle);
-            d_bus
-                .send_with_reply_and_block(msg, std::time::Duration::from_millis(5000))
-                .context(DBusSnafu)?;
-        }
-        Ok(())
-    }
-}
-
 pub struct NoSleep {
     // Connection to the D-Bus
     d_bus: Connection,
 
-    // The unblock handle
-    no_sleep_handle: Option<NoSleepHandle>,
+    // The handles to all the locks
+    no_sleep_handles: Vec<NoSleepHandle>,
 }
 
 impl NoSleep {
-    /// Creates a new NoSleep type and connects to the D-Bus.
-    /// The session is automatically closed when the instance is dropped.
-    pub fn new() -> Result<NoSleep> {
-        Ok(NoSleep {
-            d_bus: Connection::new_session().context(DBusSnafu)?,
-            no_sleep_handle: None,
-        })
-    }
-
-    /// Blocks the system from entering low-power (sleep) mode.
-    /// By making an synchronous call to the D-Bus.
-    /// If [`self::stop`] is not called, then he lock will be cleaned up
-    /// when the bus is closed.
-    pub fn start(&mut self, nosleep_type: NoSleepType) -> Result<()> {
+    fn prevent_sleep(&mut self, nosleep_type: NoSleepType) -> Result<(), NoSleepError> {
         // Clear any previous handles held
         self.stop()?;
 
         let response = self.inhibit(&DBusAPI::GnomeApi, &nosleep_type);
-        if let Ok(cookie) = response {
-            self.no_sleep_handle = Some(NoSleepHandle {
-                cookies: vec![cookie],
-            });
+        if let Ok(handle) = response {
+            self.no_sleep_handles = vec![handle];
             return Ok(());
         }
-        // Try again using the FreeDesktopPowerApi (we need two calls)
-        let mut cookies: Vec<NoSleepHandleCookie> = vec![];
+
+        // Try again using the FreeDesktopPowerApi for which we need two calls
+        let mut handles: Vec<NoSleepHandle> = vec![];
         if nosleep_type == NoSleepType::PreventUserIdleDisplaySleep {
-            let cookie = self.inhibit(&DBusAPI::FreeDesktopScreenSaverAPI, &nosleep_type)?;
-            cookies.push(cookie);
+            let handle = self.inhibit(
+                &DBusAPI::FreeDesktopScreenSaverAPI,
+                &NoSleepType::PreventUserIdleDisplaySleep,
+            )?;
+            handles.push(handle);
         }
         // Prevent suspension
-        let cookie = self.inhibit(&DBusAPI::FreeDesktopPowerApi, &nosleep_type)?;
-        cookies.push(cookie);
-        self.no_sleep_handle = Some(NoSleepHandle { cookies });
+        let handle = self.inhibit(&DBusAPI::FreeDesktopPowerApi, &nosleep_type)?;
+        handles.push(handle);
+        self.no_sleep_handles = handles;
         Ok(())
     }
 
-    /// Stop blocking the system from entering power save mode
-    pub fn stop(&self) -> Result<()> {
-        if let Some(handle) = &self.no_sleep_handle {
-            return handle.stop(&self.d_bus);
-        }
-        Ok(())
-    }
-
-    fn inhibit(&self, api: &DBusAPI, nosleep_type: &NoSleepType) -> Result<NoSleepHandleCookie> {
+    fn inhibit(
+        &self,
+        api: &DBusAPI,
+        nosleep_type: &NoSleepType,
+    ) -> Result<NoSleepHandle, NoSleepError> {
         let msg = inhibit_msg(api, nosleep_type);
         let response = self
             .d_bus
             .send_with_reply_and_block(msg, std::time::Duration::from_millis(5000))
-            .context(DBusSnafu)?;
-        let handle = response.get1().context(InvalidResponseSnafu)?;
-        Ok(NoSleepHandleCookie { handle, api: *api })
+            .map_err(|e| NoSleepError::PreventSleep {
+                reason: e.to_string(),
+            })?;
+        match response.get1::<u32>() {
+            Some(handle) => Ok(NoSleepHandle { handle, api: *api }),
+            None => Err(NoSleepError::PreventSleep {
+                reason: "Invalid message or type".to_string(),
+            }),
+        }
+    }
+}
+
+impl NoSleepTrait for NoSleep {
+    /// Creates a new NoSleep type and connects to the D-Bus.
+    /// The session is automatically closed when the instance is dropped.
+    fn new() -> Result<NoSleep, NoSleepError> {
+        Ok(NoSleep {
+            d_bus: Connection::new_session().map_err(|e| NoSleepError::Init {
+                reason: e.to_string(),
+            })?,
+            no_sleep_handles: vec![],
+        })
+    }
+
+    fn prevent_display_sleep(&mut self) -> Result<(), NoSleepError> {
+        self.prevent_sleep(NoSleepType::PreventUserIdleDisplaySleep)
+    }
+
+    fn prevent_system_sleep(&mut self) -> Result<(), NoSleepError> {
+        self.prevent_sleep(NoSleepType::PreventUserIdleSystemSleep)
+    }
+
+    fn stop(&mut self) -> Result<(), NoSleepError> {
+        for handle in &self.no_sleep_handles {
+            let msg = uninhibit_msg(&handle.api, handle.handle);
+            self.d_bus
+                .send_with_reply_and_block(msg, std::time::Duration::from_millis(5000))
+                .map_err(|e| NoSleepError::StopLock {
+                    reason: e.to_string(),
+                })?;
+        }
+        Ok(())
     }
 }
 
@@ -182,7 +177,7 @@ fn uninhibit_msg(api: &DBusAPI, handle: u32) -> dbus::Message {
     match api {
         DBusAPI::GnomeApi => {
             // Arguments are
-            // cookie:       lock from the inhibit method
+            // handle:       lock from the inhibit method
             dbus::Message::call_with_args(
                 "org.gnome.SessionManager",
                 "/org/gnome/SessionManager",
@@ -291,11 +286,19 @@ mod tests {
     // Can only run with an active Gnome Session
     #[test]
     #[ignore]
-    fn test_start() {
+    fn test_prevent_system_sleep() {
         let mut nosleep = NoSleep::new().unwrap();
-        nosleep
-            .start(NoSleepType::PreventUserIdleSystemSleep)
-            .unwrap();
+        nosleep.prevent_system_sleep().unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(2000));
+        nosleep.stop().unwrap();
+        std::thread::sleep(std::time::Duration::from_millis(2000));
+    }
+
+    #[test]
+    #[ignore]
+    fn test_prevent_display_sleep() {
+        let mut nosleep = NoSleep::new().unwrap();
+        nosleep.prevent_display_sleep().unwrap();
         std::thread::sleep(std::time::Duration::from_millis(2000));
         nosleep.stop().unwrap();
         std::thread::sleep(std::time::Duration::from_millis(2000));
