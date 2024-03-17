@@ -21,9 +21,9 @@ impl NoSleepTrait for NoSleep {
     }
 
     /// iOS does not have a system sleep prevention API.
-    /// This method will always return an error.
+    /// This will do the same as prevent_display_sleep
     fn prevent_system_sleep(&mut self) -> Result<(), NoSleepError> {
-        unimplemented!()
+        self.prevent_display_sleep()
     }
 
     fn stop(&mut self) -> Result<(), NoSleepError> {
