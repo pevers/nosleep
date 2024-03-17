@@ -25,6 +25,9 @@ pub use nosleep_nix::*;
 #[cfg(target_os = "windows")]
 pub use nosleep_windows::*;
 
+#[cfg(target_os = "ios")]
+pub use nosleep_ios::*;
+
 #[cfg(test)]
 mod tests {
     use nosleep_types::NoSleepTrait;

@@ -1,0 +1,12 @@
+/Users/peter/projects/nosleep/nosleep-ios/target/debug/deps/libsnafu-0aa37410a71f0d0a.rmeta: /Users/peter/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snafu-0.7.5/src/lib.rs /Users/peter/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snafu-0.7.5/src/backtrace_inert.rs /Users/peter/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snafu-0.7.5/src/once_bool.rs /Users/peter/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snafu-0.7.5/src/error_chain.rs /Users/peter/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snafu-0.7.5/src/report.rs /Users/peter/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snafu-0.7.5/src/Snafu.md /Users/peter/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snafu-0.7.5/src/report.md /Users/peter/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snafu-0.7.5/src/../README.md
+
+/Users/peter/projects/nosleep/nosleep-ios/target/debug/deps/snafu-0aa37410a71f0d0a.d: /Users/peter/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snafu-0.7.5/src/lib.rs /Users/peter/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snafu-0.7.5/src/backtrace_inert.rs /Users/peter/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snafu-0.7.5/src/once_bool.rs /Users/peter/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snafu-0.7.5/src/error_chain.rs /Users/peter/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snafu-0.7.5/src/report.rs /Users/peter/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snafu-0.7.5/src/Snafu.md /Users/peter/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snafu-0.7.5/src/report.md /Users/peter/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snafu-0.7.5/src/../README.md
+
+/Users/peter/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snafu-0.7.5/src/lib.rs:
+/Users/peter/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snafu-0.7.5/src/backtrace_inert.rs:
+/Users/peter/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snafu-0.7.5/src/once_bool.rs:
+/Users/peter/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snafu-0.7.5/src/error_chain.rs:
+/Users/peter/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snafu-0.7.5/src/report.rs:
+/Users/peter/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snafu-0.7.5/src/Snafu.md:
+/Users/peter/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snafu-0.7.5/src/report.md:
+/Users/peter/.cargo/registry/src/index.crates.io-6f17d22bba15001f/snafu-0.7.5/src/../README.md:
