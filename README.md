@@ -21,5 +21,5 @@ nosleep.stop().unwrap(); // Not strictly needed
 | Linux    | ✔️      | ✔️      |
 | macOS    | ✔️      | ✔️      |
 | Windows  | ✔️      | ✔️      |
-| iOS      | ✔️      | ❌      |
+| iOS      | ❌      | ❌      |
 | Android  | ❌      | ❌     |
