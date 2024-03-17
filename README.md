@@ -13,3 +13,13 @@ nosleep
 std::thread::sleep(std::time::Duration::from_millis(180_000));
 nosleep.stop().unwrap(); // Not strictly needed
 ```
+
+## Supported Platforms
+
+| Platform | Status |
+|----------|--------|
+| Linux    | ✔️      |
+| macOS    | ✔️      |
+| Windows  | ✔️      |
+| iOS      | ⚠️      |
+| Android  | ❌      |
