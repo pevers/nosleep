@@ -21,3 +21,6 @@ nosleep-nix = { path = "../nosleep-nix", version = "0.3.0" }
 
 [target.'cfg(target_os = "windows")'.dependencies]
 nosleep-windows = { path = "../nosleep-windows", version = "0.3.0" }
+
+[target.'cfg(target_os = "ios")'.dependencies]
+nosleep-ios = { path = "../nosleep-ios", version = "0.3.0" }

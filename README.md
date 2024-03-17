@@ -16,10 +16,10 @@ nosleep.stop().unwrap(); // Not strictly needed
 
 ## Supported Platforms
 
-| Platform | Status |
-|----------|--------|
-| Linux    | ✔️      |
-| macOS    | ✔️      |
-| Windows  | ✔️      |
-| iOS      | ⚠️      |
-| Android  | ❌      |
+| Platform | Status | Tested |
+|----------|--------|--------|
+| Linux    | ✔️      | ✔️      |
+| macOS    | ✔️      | ✔️      |
+| Windows  | ✔️      | ✔️      |
+| iOS      | ✔️      | ❌      |
+| Android  | ❌      | ❌     |
