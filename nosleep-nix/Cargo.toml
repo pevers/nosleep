@@ -7,7 +7,7 @@ edition = "2021"
 homepage = "https://github.com/pevers/nosleep"
 repository = "https://github.com/pevers/nosleep"
 license = "MIT"
-keywords = ["nosleep", "powersave", "caffeine", "prevent-sleep", "prevent-display-lock", "prevent-system-lock"]
+keywords = ["nosleep", "powersave", "caffeine", "prevent-sleep", "prevent-display-lock"]
 readme = "README.md"
 
 [dependencies]
