@@ -6,10 +6,10 @@
 
 use nosleep_types::{NoSleepError, NoSleepTrait};
 use windows::core::PWSTR;
-use windows::Win32::Foundation::HANDLE;
+use windows::Win32::Foundation::{CloseHandle, HANDLE};
 use windows::Win32::System::Power::{
-    PowerClearRequest, PowerCreateRequest, PowerRequestDisplayRequired, PowerRequestSystemRequired,
-    PowerSetRequest, POWER_REQUEST_TYPE,
+    PowerCreateRequest, PowerRequestDisplayRequired, PowerRequestSystemRequired, PowerSetRequest,
+    POWER_REQUEST_TYPE,
 };
 use windows::Win32::System::Threading::{
     POWER_REQUEST_CONTEXT_SIMPLE_STRING, REASON_CONTEXT, REASON_CONTEXT_0,
@@ -117,21 +117,22 @@ impl NoSleepTrait for NoSleep {
     fn stop(&mut self) -> Result<(), NoSleepError> {
         if let Some(handle) = &self.no_sleep_handle {
             unsafe {
-                PowerClearRequest(handle.system_handle, PowerRequestSystemRequired).map_err(
-                    |e| NoSleepError::StopLock {
-                        reason: e.to_string(),
-                    },
-                )?;
                 if let Some(display_handle) = handle.display_handle {
-                    PowerClearRequest(display_handle, PowerRequestDisplayRequired).map_err(
-                        |e| NoSleepError::StopLock {
-                            reason: e.to_string(),
-                        },
-                    )?;
+                    let _ = CloseHandle(display_handle);
                 }
+
+                let _ = CloseHandle(handle.system_handle);
             }
+
+            self.no_sleep_handle = None;
         }
         Ok(())
+    }
+}
+
+impl Drop for NoSleep {
+    fn drop(&mut self) {
+        let _ = self.stop();
     }
 }
 
@@ -156,5 +157,13 @@ mod tests {
         let mut nosleep = NoSleep::new().unwrap();
         nosleep.prevent_display_sleep().unwrap();
         nosleep.stop().unwrap();
+    }
+
+    #[test]
+    fn test_start_after_stop() {
+        let mut nosleep = NoSleep::new().unwrap();
+        nosleep.prevent_display_sleep().unwrap();
+        nosleep.stop().unwrap();
+        nosleep.prevent_display_sleep().unwrap();
     }
 }
